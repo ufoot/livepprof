@@ -5,8 +5,8 @@
 // NOTE: There are *three* independent implementations of this object
 // file format in the Go source tree:
 //
-//	- cmd/internal/goobj/read.go (used by cmd/addr2line, cmd/nm, cmd/objdump, cmd/pprof)
-//	- cmd/internal/obj/objfile.go (used by cmd/asm and cmd/compile)
+//	- github.com/ufoot/livepprof/internal/goobj/read.go (used by cmd/addr2line, cmd/nm, cmd/objdump, cmd/pprof)
+//	- github.com/ufoot/livepprof/internal/obj/objfile.go (used by cmd/asm and cmd/compile)
 //	- cmd/link/internal/objfile.go (used by cmd/link)
 //
 // When changing the object file format, remember to change all three.

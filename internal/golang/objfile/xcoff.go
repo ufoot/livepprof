@@ -7,7 +7,7 @@
 package objfile
 
 import (
-	"cmd/internal/xcoff"
+	"github.com/ufoot/livepprof/internal/xcoff"
 	"debug/dwarf"
 	"fmt"
 	"io"

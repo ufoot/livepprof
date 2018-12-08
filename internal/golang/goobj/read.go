@@ -11,7 +11,7 @@ package goobj
 import (
 	"bufio"
 	"bytes"
-	"cmd/internal/objabi"
+	"github.com/ufoot/livepprof/internal/objabi"
 	"errors"
 	"fmt"
 	"io"
@@ -117,7 +117,7 @@ type FuncData struct {
 }
 
 // An InlinedCall is a node in an InlTree.
-// See cmd/internal/obj.InlTree for details.
+// See github.com/ufoot/livepprof/internal/obj.InlTree for details.
 type InlinedCall struct {
 	Parent int64
 	File   string

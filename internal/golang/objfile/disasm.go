@@ -7,7 +7,7 @@ package objfile
 import (
 	"bufio"
 	"bytes"
-	"cmd/internal/src"
+	"github.com/ufoot/livepprof/internal/src"
 	"container/list"
 	"debug/gosym"
 	"encoding/binary"

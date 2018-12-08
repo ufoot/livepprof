@@ -7,9 +7,9 @@
 package objfile
 
 import (
-	"cmd/internal/goobj"
-	"cmd/internal/objabi"
-	"cmd/internal/sys"
+	"github.com/ufoot/livepprof/internal/goobj"
+	"github.com/ufoot/livepprof/internal/objabi"
+	"github.com/ufoot/livepprof/internal/sys"
 	"debug/dwarf"
 	"debug/gosym"
 	"errors"
