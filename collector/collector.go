@@ -3,9 +3,12 @@
 // Live pprof homepage: https://github.com/ufoot/livepprof
 // Contact author: ufoot@ufoot.org
 
-package livepprof
+package collector
 
-type Profiler interface {
-	Heap() <-chan Data
-	Close()
+import (
+	"github.com/ufoot/livepprof/objfile"
+)
+
+type Collector interface {
+	Collect() (map[objfile.Location]float64, error)
 }

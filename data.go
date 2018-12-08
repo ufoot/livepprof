@@ -5,7 +5,18 @@
 
 package livepprof
 
-type Profiler interface {
-	Heap() <-chan Data
-	Close()
+import (
+	"time"
+
+	"github.com/ufoot/livepprof/objfile"
+)
+
+type Entry struct {
+	Key   objfile.Location
+	Value float64
+}
+
+type Data struct {
+	Timestamp time.Time
+	Entries   []Entry
 }
