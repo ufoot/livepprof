@@ -25,7 +25,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/google/pprof/internal/plugin"
+	"github.com/ufoot/livepprof/internal/google/plugin"
 )
 
 var testAddrMap = map[int]string{
