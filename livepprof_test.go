@@ -43,7 +43,7 @@ func TestLPBasic(t *testing.T) {
 		assert.Nil(err)
 	}
 
-	a := New(errHandler, time.Second/10)
+	a := New("livepprof", errHandler, time.Second/10, 100)
 	defer a.Close()
 	assert.NotNil(a)
 	assert.NotNil(a.Heap())

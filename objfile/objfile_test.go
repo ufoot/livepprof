@@ -20,7 +20,7 @@ func TestObjFile(t *testing.T) {
 	assert.Nil(err)
 	assert.NotNil(of)
 
-	l, err := of.Resolve(42)
+	l, err := of.Resolve("livepprof", []uint64{42})
 	assert.NotNil(err, "querying a random address should not return a valid location")
 	assert.Nil(l)
 }
