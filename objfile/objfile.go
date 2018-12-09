@@ -83,7 +83,11 @@ func (bof *ObjFile) Resolve(contains string, addrs []uint64) (*Location, error) 
 		if len(frames) < 1 {
 			return nil, NoFrame0Error{}
 		}
-		if strings.Contains(frames[0].File, contains) {
+		file := frames[0].File
+		if strings.Contains(file, contains) && !strings.Contains(file, "/vendor/") {
+			// If the file contains what we're searching for, consider we found leaf.
+			// Excluding paths containing vendor because my-package/vendor/github.com/other
+			// is probably not our code, so not a really interesting leaf.
 			leaf = i
 			break
 		}
