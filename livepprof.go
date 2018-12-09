@@ -16,6 +16,7 @@ import (
 type LP struct {
 	errHandler    func(err error)
 	delay         time.Duration
+	limit         int
 	heapCollector collector.Collector
 	heaps         chan Data
 	exit          chan struct{}
@@ -25,10 +26,11 @@ type LP struct {
 
 var _ Profiler = &LP{}
 
-func New(errHandler func(err error), delay time.Duration) *LP {
+func New(errHandler func(err error), delay time.Duration, limit int) *LP {
 	lp := &LP{
 		errHandler:    errHandler,
 		delay:         delay,
+		limit:         limit,
 		heapCollector: heap.New(),
 	}
 	lp.Start()
@@ -62,22 +64,8 @@ func (lp *LP) runHeaps(heaps chan<- Data) {
 				lp.handleErr(err)
 				continue
 			}
-			data := Data{
-				Timestamp: now,
-			}
-			for k, v := range rawData {
-				data.Entries = append(data.Entries, Entry{Key: k, Value: v})
-			}
-			timeout := time.NewTimer(lp.delay)
-			select {
-			case heaps <- data:
-				if !timeout.Stop() {
-					<-timeout.C
-				}
-			case <-timeout.C:
-				lp.handleErr(err)
-				continue
-			}
+			data := buildData(now, rawData, lp.limit)
+			heaps <- data
 		case <-lp.exit:
 			return
 		}
@@ -108,6 +96,13 @@ func (lp *LP) Stop() {
 	}
 
 	close(lp.exit)
+
+	// Drain chan to avoid it blocking.
+	go func() {
+		for _ = range lp.heaps {
+		}
+	}()
+
 	lp.wg.Wait()
 	lp.exit = nil
 	close(lp.heaps)

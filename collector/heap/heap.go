@@ -75,12 +75,12 @@ func (h *Heap) Collect() (map[objfile.Location]float64, error) {
 			return nil, NoLocationError{}
 		}
 		bytesValues := sample.NumLabel["bytes"]
-		if len(bytesValues) > 0 {
-			bytesValue := ret[*loc]
-			for _, v := range bytesValues {
-				bytesValue += float64(v)
-			}
-			ret[*loc] = bytesValue
+		var d float64
+		for _, v := range bytesValues {
+			d += float64(v)
+		}
+		if d > 0 {
+			ret[*loc] += d
 		}
 	}
 

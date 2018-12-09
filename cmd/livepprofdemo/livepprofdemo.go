@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	lp := livepprof.New(func(err error) { log.Printf("%v", err) }, 3*time.Second)
+	lp := livepprof.New(func(err error) { log.Printf("%v", err) }, 3*time.Second, 5)
 	defer lp.Close()
 
 	go func() {
