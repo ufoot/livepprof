@@ -14,6 +14,7 @@ import (
 	"github.com/ufoot/livepprof/collector/heap"
 )
 
+// LP is an implementation of a live profiler.
 type LP struct {
 	errHandler    func(err error)
 	delay         time.Duration
@@ -27,8 +28,13 @@ type LP struct {
 	mu            sync.RWMutex
 }
 
+// Profiler is a generic profiler interface.
 var _ Profiler = &LP{}
 
+// New live profiler.
+// The contains parameter is used to choose the leaf on which to aggregate data.
+// Just choose something that is in your source files path, typically a top-level
+// package name, namespace, whatever identifies your code.
 func New(contains string, errHandler func(err error), delay time.Duration, limit int) *LP {
 	lp := &LP{
 		errHandler:    errHandler,
@@ -36,11 +42,15 @@ func New(contains string, errHandler func(err error), delay time.Duration, limit
 		limit:         limit,
 		cpuCollector:  cpu.New(contains, delay),
 		heapCollector: heap.New(contains),
+		cpus:          make(chan Data),
+		heaps:         make(chan Data),
 	}
+
 	lp.Start()
 	return lp
 }
 
+// Cpu channel on which cpu data is sent.
 func (lp *LP) Cpu() <-chan Data {
 	lp.mu.RLock()
 	defer lp.mu.RUnlock()
@@ -48,6 +58,7 @@ func (lp *LP) Cpu() <-chan Data {
 	return lp.cpus
 }
 
+// Heap channel on which heap data is sent.
 func (lp *LP) Heap() <-chan Data {
 	lp.mu.RLock()
 	defer lp.mu.RUnlock()
@@ -105,27 +116,25 @@ func (lp *LP) runHeaps(heaps chan<- Data) {
 	}
 }
 
+// Start the profiler.
 func (lp *LP) Start() {
 	lp.mu.Lock()
 	defer lp.mu.Unlock()
 
-	if lp.exit != nil {
+	if lp.exit != nil ||
+		lp.cpuCollector == nil || lp.heapCollector == nil ||
+		lp.cpus == nil || lp.heaps == nil {
 		return
 	}
 
 	lp.exit = make(chan struct{})
-	lp.cpus = make(chan Data)
-	lp.heaps = make(chan Data)
 
 	lp.wg.Add(2)
 	go lp.runCpus(lp.cpus)
 	go lp.runHeaps(lp.heaps)
 }
 
-func (lp *LP) Stop() {
-	lp.mu.Lock()
-	defer lp.mu.Unlock()
-
+func (lp *LP) stop() {
 	if lp.exit == nil {
 		return
 	}
@@ -134,22 +143,38 @@ func (lp *LP) Stop() {
 
 	// Drain chan to avoid it blocking.
 	go func() {
-		for _ = range lp.heaps {
+		for range lp.heaps {
 		}
 	}()
 	go func() {
-		for _ = range lp.cpus {
+		for range lp.cpus {
 		}
 	}()
 
 	lp.wg.Wait()
 	lp.exit = nil
+}
+
+// Stop the profiler.
+func (lp *LP) Stop() {
+	lp.mu.Lock()
+	defer lp.mu.Unlock()
+
+	lp.stop()
+}
+
+// Close the profiler. It can't be started again.
+func (lp *LP) Close() {
+	lp.mu.Lock()
+	defer lp.mu.Unlock()
+
+	lp.stop()
+
+	lp.cpuCollector = nil
+	lp.heapCollector = nil
+
 	close(lp.heaps)
 	lp.heaps = nil
 	close(lp.cpus)
 	lp.cpus = nil
-}
-
-func (lp *LP) Close() {
-	lp.Stop()
 }

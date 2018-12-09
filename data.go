@@ -13,14 +13,20 @@ import (
 	"github.com/ufoot/livepprof/objfile"
 )
 
+// Entry is used to store data results.
 type Entry struct {
-	Key   objfile.Location
+	// Key is the aggregation key for data, basically a location in the code.
+	Key objfile.Location
+	// Value is the measured value (bytes, CPU cycles...)
 	Value float64
 }
 
+// Data passed in channels.
 type Data struct {
+	// Timestamp when the data was generated.
 	Timestamp time.Time
-	Entries   []Entry
+	// Entries, sorted by order of importance, greater numbers at the beginning.
+	Entries []Entry
 }
 
 type sortEntries struct {
