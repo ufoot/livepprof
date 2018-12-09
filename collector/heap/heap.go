@@ -27,12 +27,16 @@ func (e NoLocationError) Error() string {
 	return "no location"
 }
 
-type Heap struct{}
+type Heap struct {
+	contains string
+}
 
 var _ collector.Collector = &Heap{}
 
-func New() *Heap {
-	return &Heap{}
+func New(contains string) *Heap {
+	return &Heap{
+		contains: contains,
+	}
 }
 
 func (h *Heap) Collect() (map[objfile.Location]float64, error) {
@@ -67,7 +71,7 @@ func (h *Heap) Collect() (map[objfile.Location]float64, error) {
 		for _, loc := range sample.Location {
 			addresses = append(addresses, loc.Address)
 		}
-		loc, err := objFile.Resolve(addresses)
+		loc, err := objFile.Resolve(h.contains, addresses)
 		if err != nil {
 			return nil, err
 		}

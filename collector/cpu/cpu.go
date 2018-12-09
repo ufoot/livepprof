@@ -31,14 +31,16 @@ func (e UnexpectedValueLenError) Error() string {
 }
 
 type Cpu struct {
-	delay time.Duration
+	contains string
+	delay    time.Duration
 }
 
 var _ collector.Collector = &Cpu{}
 
-func New(delay time.Duration) *Cpu {
+func New(contains string, delay time.Duration) *Cpu {
 	return &Cpu{
-		delay: delay,
+		contains: contains,
+		delay:    delay,
 	}
 }
 
@@ -51,7 +53,7 @@ func sigProfile() error {
 	return p.Signal(syscall.SIGPROF)
 }
 
-func (h *Cpu) Collect() (map[objfile.Location]float64, error) {
+func (c *Cpu) Collect() (map[objfile.Location]float64, error) {
 	var buf bytes.Buffer
 
 	err := pprof.StartCPUProfile(&buf)
@@ -61,7 +63,7 @@ func (h *Cpu) Collect() (map[objfile.Location]float64, error) {
 	if err != nil {
 		return nil, err
 	}
-	time.Sleep(h.delay)
+	time.Sleep(c.delay)
 	pprof.StopCPUProfile()
 
 	gp, err := profile.Parse(&buf)
@@ -82,7 +84,7 @@ func (h *Cpu) Collect() (map[objfile.Location]float64, error) {
 		for _, loc := range sample.Location {
 			addresses = append(addresses, loc.Address)
 		}
-		loc, err := objFile.Resolve(addresses)
+		loc, err := objFile.Resolve(c.contains, addresses)
 		if err != nil {
 			return nil, err
 		}

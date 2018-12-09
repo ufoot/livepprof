@@ -59,7 +59,7 @@ func TestCollect(t *testing.T) {
 		t.Logf("busy2: %0.1f", busy2(exit))
 	}()
 
-	h := New(3 * time.Second)
+	h := New("livepprof", 3*time.Second)
 	assert.NotNil(h)
 
 	data, err := h.Collect()

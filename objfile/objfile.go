@@ -20,7 +20,7 @@ var globalObjFile *ObjFile
 
 type Resolver interface {
 	Name() string
-	Resolve(addrs []uint64) (*Location, error)
+	Resolve(contains string, addrs []uint64) (*Location, error)
 }
 
 type ObjFile struct {
@@ -60,23 +60,38 @@ func (bof *ObjFile) Name() string {
 }
 
 // Resolve returns the leaf source line for a location.
-func (bof *ObjFile) Resolve(addrs []uint64) (*Location, error) {
+func (bof *ObjFile) Resolve(contains string, addrs []uint64) (*Location, error) {
 	if bof == nil {
 		return nil, NilObjFileError{}
 	}
 	if len(addrs) < 1 {
 		return nil, NoAddrError{}
 	}
-	frames, err := bof.objFile.SourceLine(addrs[0])
-	if err != nil {
-		return nil, err
+	var leaf int
+	for i, addr := range addrs {
+		frames, err := bof.objFile.SourceLine(addr)
+		if err != nil {
+			return nil, err
+		}
+		if len(frames) < 1 {
+			return nil, NoFrame0Error{}
+		}
+		if strings.Contains(frames[0].File, contains) {
+			leaf = i
+			break
+		}
 	}
-	if len(frames) < 1 {
-		return nil, NoFrame0Error{}
-	}
-	funcs := make([]string, 0, len(addrs))
+
+	n := len(addrs) - leaf
+	funcs := make([]string, 0, n)
 	// Starting at len(addrs)-2, len(addrs)-1 is usually runtime.goexit, not interesting
-	for i := len(addrs) - 2; i >= 1; i-- {
+	i0 := len(addrs) - 2
+	if i0 < 0 {
+		i0 = 0
+	}
+
+	loc := Location{}
+	for i := i0; i >= leaf; i-- {
 		frames, err := bof.objFile.SourceLine(addrs[i])
 		if err != nil {
 			return nil, err
@@ -85,11 +100,12 @@ func (bof *ObjFile) Resolve(addrs []uint64) (*Location, error) {
 			return nil, NoFrame0Error{}
 		}
 		funcs = append(funcs, funcOnly(frames[0].Func))
+		if i == leaf {
+			loc.Function = frames[0].Func
+			loc.File = frames[0].File
+		}
 	}
-	funcs = append(funcs, funcOnly(frames[0].Func))
-	return &Location{
-		Function: frames[0].Func,
-		File:     frames[0].File,
-		Stack:    strings.Join(funcs, "/"),
-	}, nil
+
+	loc.Stack = strings.Join(funcs, "/")
+	return &loc, nil
 }

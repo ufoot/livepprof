@@ -16,16 +16,17 @@ import (
 // something really stupid, but triggers activity...
 func something(exit <-chan struct{}) float64 {
 	var f float64
-	var i uint64
+	var i int
 
-	const n = 1000
+	const n = 1e3
 
 	for {
-		bufs := make([][]float64, n)
-		for i = 0; i < 1000; i++ {
-			f += math.Sqrt(float64(i))
-			bufs[i] = make([]float64, i+1)
-			bufs[i][i] = f
+		buf := make([]float64, n*n)
+		for i = 0; i < n; i++ {
+			for j := 0; j < n; j++ {
+				f += math.Sqrt(float64(i + j))
+				buf[i*j] = f
+			}
 		}
 
 		select {
@@ -37,7 +38,7 @@ func something(exit <-chan struct{}) float64 {
 }
 
 func main() {
-	lp := livepprof.New(func(err error) { log.Printf("%v", err) }, 3*time.Second, 100)
+	lp := livepprof.New("livepprof", func(err error) { log.Printf("%v", err) }, 3*time.Second, 10)
 	defer lp.Close()
 
 	exit := make(chan struct{})

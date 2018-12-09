@@ -42,7 +42,7 @@ func TestCollect(t *testing.T) {
 
 	time.Sleep(time.Second / 10)
 
-	h := New()
+	h := New("livepprof")
 	assert.NotNil(h)
 
 	data, err := h.Collect()

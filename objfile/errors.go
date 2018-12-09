@@ -23,6 +23,12 @@ func (e NoAddrError) Error() string {
 	return "no addr"
 }
 
+type NotEnoughAddrsError struct{}
+
+func (e NotEnoughAddrsError) Error() string {
+	return "not enough addrs"
+}
+
 type NilObjFileError struct{}
 
 func (e NilObjFileError) Error() string {

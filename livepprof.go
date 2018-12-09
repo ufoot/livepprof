@@ -29,13 +29,13 @@ type LP struct {
 
 var _ Profiler = &LP{}
 
-func New(errHandler func(err error), delay time.Duration, limit int) *LP {
+func New(contains string, errHandler func(err error), delay time.Duration, limit int) *LP {
 	lp := &LP{
 		errHandler:    errHandler,
 		delay:         delay,
 		limit:         limit,
-		cpuCollector:  cpu.New(delay),
-		heapCollector: heap.New(),
+		cpuCollector:  cpu.New(contains, delay),
+		heapCollector: heap.New(contains),
 	}
 	lp.Start()
 	return lp
