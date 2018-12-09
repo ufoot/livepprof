@@ -30,15 +30,15 @@ func (e UnexpectedValueLenError) Error() string {
 	return "unexpected value len"
 }
 
-type Cpu struct {
+type CPU struct {
 	contains string
 	delay    time.Duration
 }
 
-var _ collector.Collector = &Cpu{}
+var _ collector.Collector = &CPU{}
 
-func New(contains string, delay time.Duration) *Cpu {
-	return &Cpu{
+func New(contains string, delay time.Duration) *CPU {
+	return &CPU{
 		contains: contains,
 		delay:    delay,
 	}
@@ -53,7 +53,7 @@ func sigProfile() error {
 	return p.Signal(syscall.SIGPROF)
 }
 
-func (c *Cpu) Collect() (map[objfile.Location]float64, error) {
+func (c *CPU) Collect() (map[objfile.Location]float64, error) {
 	var buf bytes.Buffer
 
 	err := pprof.StartCPUProfile(&buf)

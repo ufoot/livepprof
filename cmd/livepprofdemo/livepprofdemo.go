@@ -48,7 +48,7 @@ func main() {
 
 	go func() {
 		log.Printf("ready to log cpu")
-		for cpu := range lp.Cpu() {
+		for cpu := range lp.CPU() {
 			log.Printf("cpu timestamp=%v", cpu.Timestamp)
 			for i, entry := range cpu.Entries {
 				log.Printf("cpu %d/%d: %s -> %0.1f",

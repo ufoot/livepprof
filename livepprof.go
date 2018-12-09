@@ -50,8 +50,8 @@ func New(contains string, errHandler func(err error), delay time.Duration, limit
 	return lp
 }
 
-// Cpu channel on which cpu data is sent.
-func (lp *LP) Cpu() <-chan Data {
+// CPU channel on which cpu data is sent.
+func (lp *LP) CPU() <-chan Data {
 	lp.mu.RLock()
 	defer lp.mu.RUnlock()
 
@@ -72,7 +72,7 @@ func (lp *LP) handleErr(err error) {
 	}
 }
 
-func (lp *LP) runCpus(cpus chan<- Data) {
+func (lp *LP) runCPUs(cpus chan<- Data) {
 	defer lp.wg.Done()
 
 	ticker := time.NewTicker(lp.delay)
@@ -130,7 +130,7 @@ func (lp *LP) Start() {
 	lp.exit = make(chan struct{})
 
 	lp.wg.Add(2)
-	go lp.runCpus(lp.cpus)
+	go lp.runCPUs(lp.cpus)
 	go lp.runHeaps(lp.heaps)
 }
 
