@@ -18,11 +18,17 @@ var globalMu sync.Mutex
 var globalBinutils binutils.Binutils
 var globalObjFile *ObjFile
 
+// Resolver resolves addresses to locations.
 type Resolver interface {
+	// Name of the resolver. Typically, binary file name.
 	Name() string
+	// Resolve some addresses to a location.
+	// The contains string is used to find the leaf on which to aggregate data.
+	// The addrs should be ordered with the leaf in first positions, and callers after.
 	Resolve(contains string, addrs []uint64) (*Location, error)
 }
 
+// ObjFile is an object file representation, used to resolve addresses.
 type ObjFile struct {
 	objFile plugin.ObjFile
 }
@@ -52,6 +58,7 @@ func New() (*ObjFile, error) {
 	return globalObjFile, nil
 }
 
+// Name of the binary file.
 func (bof *ObjFile) Name() string {
 	if bof == nil {
 		return ""

@@ -13,7 +13,11 @@ Under heavy development, unstable, work in progress, use at your own risk.
 Documentation
 -------------
 
-Todo...
+* [livepprof](https://godoc.org/github.com/ufoot/livepprof)
+* [livepprof/objfile](https://godoc.org/github.com/ufoot/livepprof/objfile)
+* [livepprof/collector](https://godoc.org/github.com/ufoot/livepprof/collector)
+* [livepprof/collector/cpu](https://godoc.org/github.com/ufoot/livepprof/collector/cpu)
+* [livepprof/collector/heap](https://godoc.org/github.com/ufoot/livepprof/collector/heap)
 
 Authors
 -------

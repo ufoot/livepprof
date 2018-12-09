@@ -15,30 +15,37 @@ import (
 	"github.com/ufoot/livepprof/objfile"
 )
 
+// NoHeapProfileError when there's no heap profile.
 type NoHeapProfileError struct{}
 
+// Error string.
 func (e NoHeapProfileError) Error() string {
 	return "no heap profile"
 }
 
+// NoLocationError when no location can be found.
 type NoLocationError struct{}
 
+// Error string.
 func (e NoLocationError) Error() string {
 	return "no location"
 }
 
+// Heap collector.
 type Heap struct {
 	contains string
 }
 
 var _ collector.Collector = &Heap{}
 
+// New heap collector.
 func New(contains string) *Heap {
 	return &Heap{
 		contains: contains,
 	}
 }
 
+// Collect data.
 func (h *Heap) Collect() (map[objfile.Location]float64, error) {
 	rp := pprof.Lookup("heap")
 	if rp == nil {

@@ -18,18 +18,23 @@ import (
 	"github.com/ufoot/livepprof/objfile"
 )
 
+// NoLocationError when no location can be found.
 type NoLocationError struct{}
 
+// Error string.
 func (e NoLocationError) Error() string {
 	return "no location"
 }
 
+// UnexpectedValueLenError when the value array does not have expected size.
 type UnexpectedValueLenError struct{}
 
+// Error string.
 func (e UnexpectedValueLenError) Error() string {
 	return "unexpected value len"
 }
 
+// CPU collector.
 type CPU struct {
 	contains string
 	delay    time.Duration
@@ -37,6 +42,7 @@ type CPU struct {
 
 var _ collector.Collector = &CPU{}
 
+// New CPU collector.
 func New(contains string, delay time.Duration) *CPU {
 	return &CPU{
 		contains: contains,
@@ -53,6 +59,7 @@ func sigProfile() error {
 	return p.Signal(syscall.SIGPROF)
 }
 
+// Collect data.
 func (c *CPU) Collect() (map[objfile.Location]float64, error) {
 	var buf bytes.Buffer
 

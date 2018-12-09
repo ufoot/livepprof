@@ -17,13 +17,17 @@ import (
 // function would be counted in different entries. OTOH the stack trace is
 // considered a key field, to know where the call comes from.
 type Location struct {
+	// Function from where the call was done.
 	Function string
-	File     string
-	Stack    string
+	// File where the function is.
+	File string
+	// Stack is a call stack that stops at function. Using "/" to separate functions.
+	Stack string
 }
 
 var _ fmt.Stringer = &Location{}
 
+// String returns a JSON describing the location.
 func (loc *Location) String() string {
 	if loc == nil {
 		return "{}"

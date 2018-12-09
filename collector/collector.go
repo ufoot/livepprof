@@ -9,6 +9,8 @@ import (
 	"github.com/ufoot/livepprof/objfile"
 )
 
+// Collector is a generic interface to collect data.
 type Collector interface {
+	// Collect data, and return a map of values by location.
 	Collect() (map[objfile.Location]float64, error)
 }
