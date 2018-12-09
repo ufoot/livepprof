@@ -11,11 +11,14 @@ import (
 	"strings"
 )
 
+// Location identifies a place in the code. It is used to aggregate data.
+// It does not have the uint64 address or the file line because this would
+// lead to high cardinality and, for instance, different points of the same
+// function would be counted in different entries. OTOH the stack trace is
+// considered a key field, to know where the call comes from.
 type Location struct {
-	Addr     uint64
 	Function string
 	File     string
-	Line     int
 	Stack    string
 }
 

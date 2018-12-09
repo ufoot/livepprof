@@ -6,6 +6,7 @@
 package livepprof
 
 type Profiler interface {
+	Cpu() <-chan Data
 	Heap() <-chan Data
 	Close()
 }

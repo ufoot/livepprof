@@ -88,10 +88,8 @@ func (bof *ObjFile) Resolve(addrs []uint64) (*Location, error) {
 	}
 	funcs = append(funcs, funcOnly(frames[0].Func))
 	return &Location{
-		Addr:     addrs[0],
 		Function: frames[0].Func,
 		File:     frames[0].File,
-		Line:     frames[0].Line,
 		Stack:    strings.Join(funcs, "/"),
 	}, nil
 }

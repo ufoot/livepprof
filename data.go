@@ -40,6 +40,10 @@ func (se *sortEntries) Less(i, j int) bool {
 	if se.entries[i].Value > se.entries[j].Value {
 		return true
 	}
+	if se.entries[i].Value < se.entries[j].Value {
+		return false
+	}
+
 	// unable to sort on value, sorting by key (should be rare)
 	keyI := se.entries[i].Key
 	keyJ := se.entries[j].Key
@@ -53,11 +57,6 @@ func (se *sortEntries) Less(i, j int) bool {
 	} else if cmp > 0 {
 		return false
 	}
-	if keyI.Line < keyJ.Line {
-		return true
-	} else if keyI.Line > keyJ.Line {
-		return false
-	}
 	if cmp := strings.Compare(keyI.Stack, keyJ.Stack); cmp < 0 {
 		return true
 	}
@@ -65,6 +64,8 @@ func (se *sortEntries) Less(i, j int) bool {
 }
 
 func buildData(ts time.Time, rawData map[objfile.Location]float64, limit int) Data {
+	ts = ts.Truncate(time.Millisecond) // makes logs easier to read
+
 	if limit <= 0 {
 		return Data{Timestamp: ts}
 	}
