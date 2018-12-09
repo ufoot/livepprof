@@ -30,3 +30,7 @@ _testmain.go
 
 # Vendoring
 /vendor
+
+# Demo binary
+/cmd/livepprofdemo/livepprofdemo
+

@@ -44,7 +44,7 @@ func (lp *LP) Heap() <-chan Data {
 
 func (lp *LP) handleErr(err error) {
 	if lp.errHandler != nil {
-		lp.handleErr(err)
+		lp.errHandler(err)
 	}
 }
 

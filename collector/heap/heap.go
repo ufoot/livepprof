@@ -24,7 +24,7 @@ func (e NoHeapProfileError) Error() string {
 type NoLocationError struct{}
 
 func (e NoLocationError) Error() string {
-	return "no args[0]"
+	return "no location"
 }
 
 type Heap struct{}
@@ -63,7 +63,11 @@ func (h *Heap) Collect() (map[objfile.Location]float64, error) {
 		if len(sample.Location) < 1 {
 			return nil, NoLocationError{}
 		}
-		loc, err := objFile.Resolve(sample.Location[0].Address)
+		addresses := make([]uint64, 0, len(sample.Location))
+		for _, loc := range sample.Location {
+			addresses = append(addresses, loc.Address)
+		}
+		loc, err := objFile.Resolve(addresses)
 		if err != nil {
 			return nil, err
 		}

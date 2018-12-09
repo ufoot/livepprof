@@ -7,6 +7,7 @@ package objfile
 
 import (
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/ufoot/livepprof/internal/google/binutils"
@@ -19,7 +20,7 @@ var globalObjFile *ObjFile
 
 type Resolver interface {
 	Name() string
-	Resolve(uint64) (*Location, error)
+	Resolve(addrs []uint64) (*Location, error)
 }
 
 type ObjFile struct {
@@ -59,21 +60,38 @@ func (bof *ObjFile) Name() string {
 }
 
 // Resolve returns the leaf source line for a location.
-func (bof *ObjFile) Resolve(addr uint64) (*Location, error) {
+func (bof *ObjFile) Resolve(addrs []uint64) (*Location, error) {
 	if bof == nil {
 		return nil, NilObjFileError{}
 	}
-	frames, err := bof.objFile.SourceLine(addr)
+	if len(addrs) < 1 {
+		return nil, NoAddrError{}
+	}
+	frames, err := bof.objFile.SourceLine(addrs[0])
 	if err != nil {
 		return nil, err
 	}
 	if len(frames) < 1 {
 		return nil, NoFrame0Error{}
 	}
+	funcs := make([]string, 0, len(addrs))
+	// Starting at len(addrs)-2, len(addrs)-1 is usually runtime.goexit, not interesting
+	for i := len(addrs) - 2; i >= 1; i-- {
+		frames, err := bof.objFile.SourceLine(addrs[i])
+		if err != nil {
+			return nil, err
+		}
+		if len(frames) < 1 {
+			return nil, NoFrame0Error{}
+		}
+		funcs = append(funcs, funcOnly(frames[0].Func))
+	}
+	funcs = append(funcs, funcOnly(frames[0].Func))
 	return &Location{
-		Addr:     addr,
+		Addr:     addrs[0],
 		Function: frames[0].Func,
 		File:     frames[0].File,
 		Line:     frames[0].Line,
+		Stack:    strings.Join(funcs, "/"),
 	}, nil
 }

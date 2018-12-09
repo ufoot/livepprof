@@ -17,6 +17,12 @@ func (e NoFrame0Error) Error() string {
 	return "no frame[0]"
 }
 
+type NoAddrError struct{}
+
+func (e NoAddrError) Error() string {
+	return "no addr"
+}
+
 type NilObjFileError struct{}
 
 func (e NilObjFileError) Error() string {

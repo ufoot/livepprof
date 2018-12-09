@@ -6,7 +6,9 @@
 package objfile
 
 import (
+	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 type Location struct {
@@ -14,6 +16,7 @@ type Location struct {
 	Function string
 	File     string
 	Line     int
+	Stack    string
 }
 
 var _ fmt.Stringer = &Location{}
@@ -22,6 +25,17 @@ func (loc *Location) String() string {
 	if loc == nil {
 		return "{}"
 	}
-	return fmt.Sprintf(`{"addr":"%x","function":"%s","file":"%s","line":%d}`,
-		loc.Addr, loc.Function, loc.File, loc.Line)
+	js, err := json.Marshal(loc)
+	if err != nil {
+		return "{}"
+	}
+	return string(js)
+}
+
+func funcOnly(f string) string {
+	li := strings.LastIndex(f, "/")
+	if li < 0 {
+		return f
+	}
+	return f[li+1:]
 }
