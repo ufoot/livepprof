@@ -18,6 +18,14 @@
   revision = "3ea8567a2e5752420fc544d2e2ad249721768934"
 
 [[projects]]
+  branch = "master"
+  digest = "1:3e658fb4b055816998a967aab8abe0966ce1cfcbb42c2f66a22c7c19568aa1d2"
+  name = "github.com/ianlancetaylor/demangle"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "5e5cf60278f657d30daa329dd0e7e893b6b8f027"
+
+[[projects]]
   digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
@@ -38,6 +46,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/google/pprof/profile",
+    "github.com/ianlancetaylor/demangle",
     "github.com/stretchr/testify/assert",
   ]
   solver-name = "gps-cdcl"

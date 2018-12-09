@@ -1,0 +1,16 @@
+{
+  "DisableAll": true,
+  "Enable": [
+    "deadcode",
+    "goconst",
+    "gofmt",
+    "golint",
+    "gosec",
+    "gosimple",
+    "ineffassign",
+    "interfacer",
+    "unconvert",
+    "varcheck",
+    "vet"
+  ]
+}

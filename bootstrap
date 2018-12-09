@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Live pprof is a Golang library to generate and use live profiles.
+# Copyright (C)  2018  Christian Mauduit <ufoot@ufoot.org>
+# Live pprof homepage: https://github.com/ufoot/livepprof
+# Contact author: ufoot@ufoot.org
+
+go get github.com/golang/dep/cmd/dep && \
+    dep ensure && \
+    go get github.com/alecthomas/gometalinter && \
+    (gometalinter -i > /dev/null || true)
