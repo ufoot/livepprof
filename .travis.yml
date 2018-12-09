@@ -14,4 +14,4 @@ go:
 
 install: ./bootstrap
 
-script: make && make check
+script: make && make check && make verbose
