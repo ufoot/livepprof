@@ -14,4 +14,4 @@ go:
 
 install: ./bootstrap
 
-script: make check
+script: make && make check
