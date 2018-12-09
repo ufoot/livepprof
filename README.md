@@ -8,6 +8,8 @@ Status
 
 Under heavy development, unstable, work in progress, use at your own risk.
 
+[![Build Status](https://travis-ci.org/ufoot/livepprof.svg?branch=master)](https://travis-ci.org/ufoot/livepprof/branches)
+
 Documentation
 -------------
 
