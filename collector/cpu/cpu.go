@@ -34,6 +34,14 @@ func (e UnexpectedValueLenError) Error() string {
 	return "unexpected value len"
 }
 
+// DelayTooShortError when the delay is not long enough.
+type DelayTooShortError struct{}
+
+// Error string.
+func (e DelayTooShortError) Error() string {
+	return "delay too short"
+}
+
 // CPU collector.
 type CPU struct {
 	contains string
@@ -61,6 +69,10 @@ func sigProfile() error {
 
 // Collect data.
 func (c *CPU) Collect() (map[objfile.Location]float64, error) {
+	if c.delay <= 0 {
+		return nil, DelayTooShortError{}
+	}
+
 	var buf bytes.Buffer
 
 	err := pprof.StartCPUProfile(&buf)
@@ -83,6 +95,7 @@ func (c *CPU) Collect() (map[objfile.Location]float64, error) {
 		return nil, err
 	}
 	ret := make(map[objfile.Location]float64)
+	factor := float64(time.Second) / float64(c.delay)
 	for _, sample := range gp.Sample {
 		if len(sample.Location) < 1 {
 			return nil, NoLocationError{}
@@ -104,7 +117,7 @@ func (c *CPU) Collect() (map[objfile.Location]float64, error) {
 		// [TODO:ufoot], really figure out what those numbers are...
 		d := float64(sample.Value[0])
 		if d > 0 {
-			ret[*loc] += d
+			ret[*loc] += d * factor
 		}
 	}
 
