@@ -31,6 +31,7 @@ type Resolver interface {
 // ObjFile is an object file representation, used to resolve addresses.
 type ObjFile struct {
 	objFile plugin.ObjFile
+	c       cache
 }
 
 var _ Resolver = &ObjFile{}
@@ -74,6 +75,12 @@ func (bof *ObjFile) Resolve(contains string, addrs []uint64) (*Location, error) 
 	if len(addrs) < 1 {
 		return nil, NoAddrError{}
 	}
+
+	// return data from cache if available
+	if cached := bof.c.get(addrs); cached != nil {
+		return cached, nil
+	}
+
 	var leaf int
 	for i, addr := range addrs {
 		frames, err := bof.objFile.SourceLine(addr)
@@ -118,5 +125,9 @@ func (bof *ObjFile) Resolve(contains string, addrs []uint64) (*Location, error) 
 	}
 
 	loc.Stack = strings.Join(funcs, "/")
+
+	// set data in cache for later use
+	bof.c.set(addrs, &loc)
+
 	return &loc, nil
 }
