@@ -12,5 +12,6 @@ import (
 // Collector is a generic interface to collect data.
 type Collector interface {
 	// Collect data, and return a map of values by location.
-	Collect() (map[objfile.Location]float64, error)
+	// Can be interrupted by closing exit chan.
+	Collect(exit <-chan struct{}) (map[objfile.Location]float64, error)
 }

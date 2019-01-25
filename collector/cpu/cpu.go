@@ -68,7 +68,7 @@ func sigProfile() error {
 }
 
 // Collect data.
-func (c *CPU) Collect() (map[objfile.Location]float64, error) {
+func (c *CPU) Collect(exit <-chan struct{}) (map[objfile.Location]float64, error) {
 	if c.delay <= 0 {
 		return nil, DelayTooShortError{}
 	}
@@ -82,8 +82,23 @@ func (c *CPU) Collect() (map[objfile.Location]float64, error) {
 	if err != nil {
 		return nil, err
 	}
-	time.Sleep(c.delay)
+
+	// Compute a profile for c.delay time, but quit earlier if exit is closed.
+	start := time.Now()
+	timer := time.NewTimer(c.delay)
+	select {
+	case <-timer.C:
+	case <-exit:
+		if !timer.Stop() {
+			<-timer.C
+		}
+	}
 	pprof.StopCPUProfile()
+	delay := time.Now().Sub(start)
+	if delay <= 0 {
+		// This should never happen, but let's not take the risk.
+		delay = time.Millisecond
+	}
 
 	gp, err := profile.Parse(&buf)
 	if err != nil {
@@ -95,7 +110,7 @@ func (c *CPU) Collect() (map[objfile.Location]float64, error) {
 		return nil, err
 	}
 	ret := make(map[objfile.Location]float64)
-	factor := float64(time.Second) / float64(c.delay)
+	factor := float64(time.Second) / float64(delay)
 	for _, sample := range gp.Sample {
 		if len(sample.Location) < 1 {
 			return nil, NoLocationError{}

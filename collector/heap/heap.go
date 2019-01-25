@@ -46,7 +46,7 @@ func New(contains string) *Heap {
 }
 
 // Collect data.
-func (h *Heap) Collect() (map[objfile.Location]float64, error) {
+func (h *Heap) Collect(exit <-chan struct{}) (map[objfile.Location]float64, error) {
 	rp := pprof.Lookup("heap")
 	if rp == nil {
 		return nil, NoHeapProfileError{}

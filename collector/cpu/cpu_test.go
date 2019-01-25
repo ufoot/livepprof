@@ -62,7 +62,7 @@ func TestCollect(t *testing.T) {
 	h := New("livepprof", 3*time.Second)
 	assert.NotNil(h)
 
-	data, err := h.Collect()
+	data, err := h.Collect(nil)
 	assert.Nil(err)
 	assert.NotNil(data)
 

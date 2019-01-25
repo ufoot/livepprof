@@ -81,7 +81,7 @@ func (lp *LP) runCPUs(cpus chan<- Data) {
 	for {
 		select {
 		case now := <-ticker.C:
-			rawData, err := lp.cpuCollector.Collect()
+			rawData, err := lp.cpuCollector.Collect(lp.exit)
 			if err != nil {
 				lp.handleErr(err)
 				continue
@@ -103,7 +103,7 @@ func (lp *LP) runHeaps(heaps chan<- Data) {
 	for {
 		select {
 		case now := <-ticker.C:
-			rawData, err := lp.heapCollector.Collect()
+			rawData, err := lp.heapCollector.Collect(lp.exit)
 			if err != nil {
 				lp.handleErr(err)
 				continue
