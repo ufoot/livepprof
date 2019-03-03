@@ -16,9 +16,7 @@ import (
 
 // LP is an implementation of a live profiler.
 type LP struct {
-	errHandler    func(err error)
-	delay         time.Duration
-	limit         int
+	opts          opts
 	cpuCollector  collector.Collector
 	heapCollector collector.Collector
 	cpus          chan Data
@@ -35,19 +33,23 @@ var _ Profiler = &LP{}
 // The contains parameter is used to choose the leaf on which to aggregate data.
 // Just choose something that is in your source files path, typically a top-level
 // package name, namespace, whatever identifies your code.
-func New(contains string, errHandler func(err error), delay time.Duration, limit int) *LP {
+func New(options ...Option) (*LP, error) {
+	opts := defaultOpts
+	for _, opt := range options {
+		if err := opt(&opts); err != nil {
+			return nil, err
+		}
+	}
 	lp := &LP{
-		errHandler:    errHandler,
-		delay:         delay,
-		limit:         limit,
-		cpuCollector:  cpu.New(contains, delay),
-		heapCollector: heap.New(contains),
+		opts:          opts,
+		cpuCollector:  cpu.New(opts.filter, opts.delay),
+		heapCollector: heap.New(opts.filter),
 		cpus:          make(chan Data),
 		heaps:         make(chan Data),
 	}
 
 	lp.Start()
-	return lp
+	return lp, nil
 }
 
 // CPU channel on which cpu data is sent.
@@ -67,15 +69,15 @@ func (lp *LP) Heap() <-chan Data {
 }
 
 func (lp *LP) handleErr(err error) {
-	if lp.errHandler != nil {
-		lp.errHandler(err)
+	if lp.opts.errHandler != nil {
+		lp.opts.errHandler(err)
 	}
 }
 
 func (lp *LP) runCPUs(cpus chan<- Data) {
 	defer lp.wg.Done()
 
-	ticker := time.NewTicker(lp.delay)
+	ticker := time.NewTicker(lp.opts.delay)
 	defer ticker.Stop()
 
 	for {
@@ -86,7 +88,7 @@ func (lp *LP) runCPUs(cpus chan<- Data) {
 				lp.handleErr(err)
 				continue
 			}
-			data := buildData(now, rawData, lp.limit)
+			data := buildData(now, rawData, lp.opts.limit)
 			cpus <- data
 		case <-lp.exit:
 			return
@@ -97,7 +99,7 @@ func (lp *LP) runCPUs(cpus chan<- Data) {
 func (lp *LP) runHeaps(heaps chan<- Data) {
 	defer lp.wg.Done()
 
-	ticker := time.NewTicker(lp.delay)
+	ticker := time.NewTicker(lp.opts.delay)
 	defer ticker.Stop()
 
 	for {
@@ -108,7 +110,7 @@ func (lp *LP) runHeaps(heaps chan<- Data) {
 				lp.handleErr(err)
 				continue
 			}
-			data := buildData(now, rawData, lp.limit)
+			data := buildData(now, rawData, lp.opts.limit)
 			heaps <- data
 		case <-lp.exit:
 			return
