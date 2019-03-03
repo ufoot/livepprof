@@ -38,7 +38,15 @@ func something(exit <-chan struct{}) float64 {
 }
 
 func main() {
-	lp := livepprof.New("livepprof", func(err error) { log.Printf("%v", err) }, 3*time.Second, 10)
+	lp, err := livepprof.New(
+		livepprof.WithFilter("livepprof"),
+		livepprof.WithErrorHandler(func(err error) { log.Printf("%v", err) }),
+		livepprof.WithDelay(3*time.Second),
+		livepprof.WithLimit(5),
+	)
+	if err != nil {
+		panic(err)
+	}
 	defer lp.Close()
 
 	exit := make(chan struct{})
