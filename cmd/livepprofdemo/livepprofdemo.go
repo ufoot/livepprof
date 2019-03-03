@@ -37,7 +37,7 @@ func something(exit <-chan struct{}) float64 {
 	}
 }
 
-func main() {
+func do() {
 	lp, err := livepprof.New(
 		livepprof.WithFilter("livepprof"),
 		livepprof.WithErrorHandler(func(err error) { log.Printf("%v", err) }),
@@ -66,6 +66,7 @@ func main() {
 				)
 			}
 		}
+		log.Printf("no more cpu profiles")
 	}()
 
 	go func() {
@@ -80,8 +81,14 @@ func main() {
 				)
 			}
 		}
+		log.Printf("no more heap profiles")
 	}()
 
-	time.Sleep(5 * time.Minute)
+	time.Sleep(time.Minute)
 	close(exit)
+}
+
+func main() {
+	do()
+	time.Sleep(time.Second)
 }
