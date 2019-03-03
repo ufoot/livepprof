@@ -83,6 +83,9 @@ func (lp *LP) runCPUs(cpus chan<- Data) {
 	for {
 		select {
 		case now := <-ticker.C:
+			if !lp.opts.enabled() {
+				continue
+			}
 			rawData, err := lp.cpuCollector.Collect(lp.exit)
 			if err != nil {
 				lp.handleErr(err)
@@ -105,6 +108,9 @@ func (lp *LP) runHeaps(heaps chan<- Data) {
 	for {
 		select {
 		case now := <-ticker.C:
+			if !lp.opts.enabled() {
+				continue
+			}
 			rawData, err := lp.heapCollector.Collect(lp.exit)
 			if err != nil {
 				lp.handleErr(err)

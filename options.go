@@ -19,15 +19,26 @@ const (
 )
 
 type opts struct {
-	filter     string
-	errHandler func(err error)
-	delay      time.Duration
-	limit      int
+	filter      string
+	errHandler  func(err error)
+	delay       time.Duration
+	limit       int
+	disabled    bool
+	enabledFunc func() bool
 }
 
 var defaultOpts = opts{
 	delay: defaultDelay,
 	limit: defaultLimit,
+}
+
+func (o *opts) enabled() bool {
+	if o.enabledFunc == nil {
+		// If no callback func is given, use the default
+		// static flag. By default -> it's enabled.
+		return !o.disabled
+	}
+	return o.enabledFunc()
 }
 
 // Option passed when creating the live profiler.
@@ -79,6 +90,31 @@ func WithLimit(limit int) Option {
 			return fmt.Errorf("invalid limit: %d", limit)
 		}
 		o.limit = limit
+		return nil
+	}
+}
+
+// WithEnabled allows you to enable/disable the profiler. If enabled is false,
+// no profiling fill be done, even if the profiler is started.
+func WithEnabled(enabled bool) Option {
+	return func(o *opts) error {
+		// internally, we use a disabled flag as this way, the default
+		// is to have it enabled. But the option is "Enabled"
+		// because "not disabled" is harder to understand in a public API.
+		o.disabled = !enabled
+		return nil
+	}
+}
+
+// WithEnabledFunc allows you to enable/disable the profiler with a callback.
+// This is useful if you want to enable/disable it on-the-fly without explicitly
+// stopping or starting it. One use-case is if you have a dynamic configuration.
+// This will actually poll the dynamic configuration, and enable/disable it.
+// Typically interesting if you are concerned with the CPU the profiling is consuming,
+// and/or if you want to get rid of any side effect.
+func WithEnabledFunc(enabledFunc func() bool) Option {
+	return func(o *opts) error {
+		o.enabledFunc = enabledFunc
 		return nil
 	}
 }
