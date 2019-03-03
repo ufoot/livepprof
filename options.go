@@ -7,12 +7,15 @@ package livepprof
 
 import (
 	"fmt"
+	"math/rand"
 	"time"
 )
 
 const (
 	// defaultDelay when doing profiles
 	defaultDelay = time.Minute
+	// defaultJitter to be applied on top of delay
+	defaultJitter = 0.1
 	// defaultLimit to not keep every single item in memory, only the
 	// ones with the biggest numbers are kept (sorted before filtering out).
 	defaultLimit = 20
@@ -22,14 +25,16 @@ type opts struct {
 	filter      string
 	errHandler  func(err error)
 	delay       time.Duration
+	jitter      float64
 	limit       int
 	disabled    bool
 	enabledFunc func() bool
 }
 
 var defaultOpts = opts{
-	delay: defaultDelay,
-	limit: defaultLimit,
+	delay:  defaultDelay,
+	jitter: defaultJitter,
+	limit:  defaultLimit,
 }
 
 func (o *opts) enabled() bool {
@@ -39,6 +44,13 @@ func (o *opts) enabled() bool {
 		return !o.disabled
 	}
 	return o.enabledFunc()
+}
+
+func (o *opts) jitteredDelay(r *rand.Rand) time.Duration {
+	if o.jitter == 0 {
+		return o.delay
+	}
+	return time.Duration(float64(o.delay) * (1.0 + (o.jitter * (r.Float64() - 0.5))))
 }
 
 // Option passed when creating the live profiler.
@@ -79,6 +91,22 @@ func WithDelay(delay time.Duration) Option {
 			return fmt.Errorf("invalid delay: %s", delay.String())
 		}
 		o.delay = delay
+		return nil
+	}
+}
+
+// WithJitter allows a custom jitter to be used on top of delay. Default is 0.1.
+// Which means value can be 5% lower or 5% higher than specified.
+// Jitter needs to be within 0 (no jitter at all) and 1 (from 50% to 150% of the value).
+func WithJitter(jitter float64) Option {
+	return func(o *opts) error {
+		if jitter < 0 {
+			return fmt.Errorf("jitter is too low: %0.3f", jitter)
+		}
+		if jitter > 1 {
+			return fmt.Errorf("jitter is too high: %0.3f", jitter)
+		}
+		o.jitter = jitter
 		return nil
 	}
 }

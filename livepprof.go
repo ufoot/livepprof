@@ -6,6 +6,7 @@
 package livepprof
 
 import (
+	"math/rand"
 	"sync"
 	"time"
 
@@ -21,9 +22,13 @@ type LP struct {
 	heapCollector collector.Collector
 	cpus          chan Data
 	heaps         chan Data
-	exit          chan struct{}
-	wg            sync.WaitGroup
-	mu            sync.RWMutex
+	// rand is a local random number generator. There's a reason
+	// to not use the global rand, which is that doing so, we would
+	// alter any user code that relies on it for predictable numbers.
+	rand *rand.Rand
+	exit chan struct{}
+	wg   sync.WaitGroup
+	mu   sync.RWMutex
 }
 
 // Profiler is a generic profiler interface.
@@ -46,6 +51,10 @@ func New(options ...Option) (*LP, error) {
 		heapCollector: heap.New(opts.filter),
 		cpus:          make(chan Data),
 		heaps:         make(chan Data),
+		// seed our local rand source with local time, it's OK, we
+		// don't need cryptographic random here, just a local skew
+		// so that everything does not heartbeat at the same pace.
+		rand: rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 
 	lp.Start()
@@ -77,7 +86,7 @@ func (lp *LP) handleErr(err error) {
 func (lp *LP) runCPUs(cpus chan<- Data) {
 	defer lp.wg.Done()
 
-	ticker := time.NewTicker(lp.opts.delay)
+	ticker := time.NewTicker(lp.opts.jitteredDelay(lp.rand))
 	defer ticker.Stop()
 
 	for {
@@ -102,7 +111,7 @@ func (lp *LP) runCPUs(cpus chan<- Data) {
 func (lp *LP) runHeaps(heaps chan<- Data) {
 	defer lp.wg.Done()
 
-	ticker := time.NewTicker(lp.opts.delay)
+	ticker := time.NewTicker(lp.opts.jitteredDelay(lp.rand))
 	defer ticker.Stop()
 
 	for {
