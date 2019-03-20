@@ -17,15 +17,16 @@ There are several ways to use the library, one is to directly call
 the low-level API:
 
 ```go
-    import "github.com/ufoot/livepprof/collector/cpu"
+import "github.com/ufoot/livepprof/collector/cpu"
 
-    // ...
+// ...
 
-    collector := cpu.New("mypackage", 10*time.Second)
-    data, err := collector.Collect(nil)
-    // data contains a profile, do whatever you want with it
-    // in itself it's not very different from a raw Go profile,
-    // the main difference is that name should be *resolved*.
+collector := cpu.New("mypackage", 10*time.Second)
+data, err := collector.Collect(nil)
+// Now data contains a profile, do whatever you want with it,
+// in itself it's not very different from a raw Go profile,
+// the main difference is that names should be *resolved*,
+// and also data is aggregated under "mypackage" entries.
 ```
 
 This `"mypackage"` string is here to help you have data aggregated on
@@ -41,36 +42,36 @@ I personally recommend using [Datadog](https://www.datadoghq.com/) to do this,
 but you could technically use anything.
 
 ```go
-    import (
-        "log"
-        "github.com/ufoot/livepprof"
-    )
+import (
+    "log"
+    "github.com/ufoot/livepprof"
+)
 
-    // ...
+// ...
 
-    p, err := livepprof.New(livepprof.WithFilter("mypackage"))
-    if err!=nil {
-        // handle err
-    }
-    go func() { // This goroutine reports data
-        for cpu := range p.CPU() {
-            // This is going to be called every minute by default.
-            for i, entry := range cpu.Entries {
-                // Do whatever you want with entry.
-                log.Printf("livepprof entry i=%d, function=%s, file=%s, stack=%s, value=%0.3f",
-                    i,
-                    entry.Key.Function,
-                    entry.Key.File,
-                    entry.Key.Stack,
-                    entry.Value, // this is the actual CPU usage of that entry
-                )
-             }
+p, err := livepprof.New(livepprof.WithFilter("mypackage"))
+if err!=nil {
+    // Handle error.
+}
+go func() { // This goroutine reports data in the background.
+    for cpu := range p.CPU() {
+        // This is going to be called every minute by default.
+        for i, entry := range cpu.Entries {
+            // Do whatever you want with entry.
+            log.Printf("livepprof entry %d, function=%s, file=%s, stack=%s, value=%0.3f",
+                i,
+                entry.Key.Function,
+                entry.Key.File,
+                entry.Key.Stack,
+                entry.Value, // This is the actual CPU usage of that entry.
+            )
         }
-    }()
+    }
+}()
 
-    // Your code that does things, here.
+// Your code that does things, here.
 
-    p.Stop() // Stop the goroutine reporting data
+p.Stop() // Stop the goroutine reporting data.
 ```
 
 Godoc links:
