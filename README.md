@@ -13,11 +13,73 @@ Under heavy development, unstable, work in progress, use at your own risk.
 Documentation
 -------------
 
+There are several ways to use the library, one is to directly call
+the low-level API:
+
+```go
+    import "github.com/ufoot/livepprof/collector/cpu"
+
+    // ...
+
+	collector := cpu.New("mypackage", 10*time.Second)
+    data, err := collector.Collect(nil)
+    // data contains a profile, do whatever you want with it
+    // in itself it's not very different from a raw Go profile,
+    // the main difference is that name should be *resolved*.
+```
+
+Another is to use a higher level profile interface which heartbeats
+with profiles on a regular basis. It can then be graphed, logged,
+I personally recommend using [Datadog](https://www.datadoghq.com/) to do this,
+but you could technically use anything.
+
+```go
+    import (
+        "log"
+        "github.com/ufoot/livepprof"
+    )
+
+    // ...
+
+    p, err := livepprof.New(livepprof.WithFilter("mypackage"))
+    if err!=nil {
+        // handle err
+    }
+    go func() { // This goroutine reports data
+        for cpu := range p.CPU() {
+            // This is going to be called every minute.
+            for i, entry := range cpu.Entries {
+                // Do whatever you want with entry.
+                log.Printf("livepprof entry i:%d, function:%s, file:%s, stack:%s",
+                    i,
+                    entry.Key.Function,
+                    entry.Key.File,
+                    entry.Key.Stack,
+                )
+             }
+        }
+    }()
+
+    // Your code that does things, here.
+
+    p.Stop() // Stop the goroutine reporting data
+```
+
+Godoc links:
+
 * [livepprof](https://godoc.org/github.com/ufoot/livepprof)
 * [livepprof/objfile](https://godoc.org/github.com/ufoot/livepprof/objfile)
 * [livepprof/collector](https://godoc.org/github.com/ufoot/livepprof/collector)
 * [livepprof/collector/cpu](https://godoc.org/github.com/ufoot/livepprof/collector/cpu)
 * [livepprof/collector/heap](https://godoc.org/github.com/ufoot/livepprof/collector/heap)
+
+Bugs
+----
+
+Again, super experimental, among other things:
+
+* it requires to have [GNU binutils](https://www.gnu.org/software/binutils/) installed, which is akward as Go as [builtin support](https://golang.org/pkg/debug/elf/) to analyze binaries.
+* the heap profiles look wrong, generally speaking if you want outliers, you're going to get the right ones, but data is skewed, need to figure out where the problem is exactly
 
 Authors
 -------
