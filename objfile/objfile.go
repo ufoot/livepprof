@@ -6,7 +6,6 @@
 package objfile
 
 import (
-	"os"
 	"strings"
 	"sync"
 
@@ -48,10 +47,12 @@ func New() (*ObjFile, error) {
 	if globalObjFile != nil {
 		return globalObjFile, nil
 	}
-	if len(os.Args) < 1 {
-		return nil, NoArgs0Error{}
+
+	argv0, err := findArgv0()
+	if err != nil {
+		return nil, err
 	}
-	f, err := globalBinutils.Open(os.Args[0], 0, ^uint64(0), 0)
+	f, err := globalBinutils.Open(argv0, 0, ^uint64(0), 0)
 	if err != nil {
 		return nil, err
 	}
